@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-App Database API</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗄️</text></svg>">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-database"></i>
+                    <span>Multi-App Database API</span>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-danger" onclick="showDeleteAllModal()">
+                        <i class="fas fa-trash"></i> Borrar Todo
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h3><i class="fas fa-apps"></i> Apps</h3>
+                    <button class="btn btn-primary" onclick="createNewApp()">
+                        <i class="fas fa-plus"></i> Nueva App
+                    </button>
+                </div>
+                <div class="apps-list" id="apps-list">
+                    <!-- Apps tabs will be dynamically added here -->
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <div class="welcome-screen" id="welcome-screen">
+                    <div class="welcome-content">
+                        <i class="fas fa-rocket welcome-icon"></i>
+                        <h2>¡Bienvenido a Multi-App Database API!</h2>
+                        <p>Sistema completo de base de datos sin autenticación. Crea múltiples apps y gestiona datos en tiempo real.</p>
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <h4>Sin Auth</h4>
+                                <p>Acceso directo con URL</p>
+                            </div>
+                            <div class="feature-card">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <h4>Tiempo Real</h4>
+                                <p>Datos sincronizados al instante</p>
+                            </div>
+                            <div class="feature-card">
+                                <i class="fas fa-file-alt"></i>
+                                <h4>Todo Tipo de Archivos</h4>
+                                <p>Imágenes, videos, PDFs, etc.</p>
+                            </div>
+                            <div class="feature-card">
+                                <i class="fas fa-code"></i>
+                                <h4>API Completa</h4>
+                                <p>CRUD operations ready</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-large" onclick="createNewApp()">
+                            <i class="fas fa-plus"></i> Crear Primera App
+                        </button>
+                    </div>
+                </div>
+
+                <div class="app-content" id="app-content" style="display: none;">
+                    <div class="app-header">
+                        <h2 id="app-title">App Name</h2>
+                        <div class="app-actions">
+                            <button class="btn btn-outline" onclick="showAPICode()">
+                                <i class="fas fa-code"></i> Ver Código API
+                            </button>
+                            <button class="btn btn-outline" onclick="refreshData()">
+                                <i class="fas fa-refresh"></i> Actualizar
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteAppData()">
+                                <i class="fas fa-trash"></i> Borrar Datos
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="app-tabs">
+                        <button class="tab-btn active" data-tab="data" onclick="switchTab(this, 'data')">
+                            <i class="fas fa-database"></i> Datos
+                        </button>
+                        <button class="tab-btn" data-tab="upload" onclick="switchTab(this, 'upload')">
+                            <i class="fas fa-upload"></i> Subir Archivo
+                        </button>
+                        <button class="tab-btn" data-tab="code" onclick="switchTab(this, 'code')">
+                            <i class="fas fa-code"></i> Código API
+                        </button>
+                        <button class="tab-btn" data-tab="settings" onclick="switchTab(this, 'settings')">
+                            <i class="fas fa-cog"></i> Configuración
+                        </button>
+                    </div>
+
+                    <div class="tab-content">
+                        <!-- Data Tab -->
+                        <div id="tab-data" class="tab-pane active">
+                            <div class="data-controls">
+                                <button class="btn btn-primary" onclick="showAddRecordModal()">
+                                    <i class="fas fa-plus"></i> Agregar Registro
+                                </button>
+                                <div class="search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="search-input" placeholder="Buscar..." oninput="filterData()">
+                                </div>
+                            </div>
+                            <div class="data-table-container">
+                                <table class="data-table" id="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Timestamp</th>
+                                            <th>Tipo</th>
+                                            <th>Datos</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="data-tbody">
+                                        <tr class="no-data">
+                                            <td colspan="5">
+                                                <i class="fas fa-inbox"></i>
+                                                No hay datos disponibles
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Upload Tab -->
+                        <div id="tab-upload" class="tab-pane">
+                            <div class="upload-area">
+                                <div class="upload-zone" id="upload-zone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                    <h3>Arrastra archivos aquí o haz clic para seleccionar</h3>
+                                    <p>Soporta todos los tipos de archivos: imágenes, videos, PDFs, documentos, etc.</p>
+                                    <input type="file" id="file-input" multiple onchange="handleFileSelect(event)">
+                                    <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
+                                        <i class="fas fa-folder-open"></i> Seleccionar Archivos
+                                    </button>
+                                </div>
+                                <div class="upload-progress" id="upload-progress" style="display: none;">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="progress-fill"></div>
+                                    </div>
+                                    <span id="progress-text">0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Code Tab -->
+                        <div id="tab-code" class="tab-pane">
+                            <div class="code-section">
+                                <div class="code-header">
+                                    <h3><i class="fas fa-code"></i> Código para IA (Input)</h3>
+                                    <button class="btn btn-outline" onclick="copyToClipboard('input-code')">
+                                        <i class="fas fa-copy"></i> Copiar
+                                    </button>
+                                </div>
+                                <div class="code-block">
+                                    <pre><code id="input-code"></code></pre>
+                                </div>
+                            </div>
+                            <div class="code-section">
+                                <div class="code-header">
+                                    <h3><i class="fas fa-terminal"></i> Código de Respuesta (Output)</h3>
+                                    <button class="btn btn-outline" onclick="copyToClipboard('output-code')">
+                                        <i class="fas fa-copy"></i> Copiar
+                                    </button>
+                                </div>
+                                <div class="code-block">
+                                    <pre><code id="output-code"></code></pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Settings Tab -->
+                        <div id="tab-settings" class="tab-pane">
+                            <div class="settings-grid">
+                                <div class="setting-card">
+                                    <h4><i class="fas fa-eye"></i> Visibilidad</h4>
+                                    <label class="switch">
+                                        <input type="checkbox" id="privacy-toggle" onchange="togglePrivacy()">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <p id="privacy-status">Público - Cualquiera puede ver los datos</p>
+                                </div>
+                                <div class="setting-card">
+                                    <h4><i class="fas fa-sync"></i> Auto-Actualización</h4>
+                                    <label class="switch">
+                                        <input type="checkbox" id="auto-refresh" checked onchange="toggleAutoRefresh()">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <p>Actualización automática cada 5 segundos</p>
+                                </div>
+                                <div class="setting-card">
+                                    <h4><i class="fas fa-info-circle"></i> Información de la App</h4>
+                                    <p><strong>ID:</strong> <span id="app-id-display"></span></p>
+                                    <p><strong>Endpoint:</strong> <span id="app-endpoint"></span></p>
+                                    <p><strong>Creada:</strong> <span id="app-created"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Delete All Modal -->
+    <div class="modal" id="delete-all-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> ¿Borrar Toda la Base de Datos?</h3>
+                <button class="modal-close" onclick="closeModal('delete-all-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Esta acción eliminará <strong>TODAS</strong> las aplicaciones y sus datos. Esta acción no se puede deshacer.</p>
+                <div class="form-group">
+                    <label>Introduce la contraseña:</label>
+                    <input type="password" id="delete-all-password" placeholder="deleteall12">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('delete-all-modal')">Cancelar</button>
+                <button class="btn btn-danger" onclick="confirmDeleteAll()">Borrar Todo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New App Modal -->
+    <div class="modal" id="new-app-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus"></i> Crear Nueva App</h3>
+                <button class="modal-close" onclick="closeModal('new-app-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nombre de la App:</label>
+                    <input type="text" id="new-app-name" placeholder="Mi Nueva App">
+                </div>
+                <div class="form-group">
+                    <label>Descripción (opcional):</label>
+                    <textarea id="new-app-description" placeholder="Descripción de la app..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('new-app-modal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="confirmCreateApp()">Crear App</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Record Modal -->
+    <div class="modal" id="add-record-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus"></i> Agregar Nuevo Registro</h3>
+                <button class="modal-close" onclick="closeModal('add-record-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Tipo de Dato:</label>
+                    <select id="record-type" onchange="updateRecordForm()">
+                        <option value="text">Texto</option>
+                        <option value="json">JSON</option>
+                        <option value="form">Formulario</option>
+                        <option value="file">Archivo</option>
+                    </select>
+                </div>
+                <div id="record-form">
+                    <!-- Dynamic form will be added here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('add-record-modal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="confirmAddRecord()">Agregar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Code Modal -->
+    <div class="modal large" id="api-code-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-code"></i> Código API Completo</h3>
+                <button class="modal-close" onclick="closeModal('api-code-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="code-tabs">
+                    <button class="code-tab-btn active" onclick="showCodeTab('input')">Código Input</button>
+                    <button class="code-tab-btn" onclick="showCodeTab('output')">Código Output</button>
+                    <button class="code-tab-btn" onclick="showCodeTab('examples')">Ejemplos</button>
+                </div>
+                <div class="code-content">
+                    <div id="code-input-tab" class="code-tab-content active">
+                        <button class="btn btn-outline copy-btn" onclick="copyToClipboard('full-input-code')">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                        <pre><code id="full-input-code"></code></pre>
+                    </div>
+                    <div id="code-output-tab" class="code-tab-content">
+                        <button class="btn btn-outline copy-btn" onclick="copyToClipboard('full-output-code')">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                        <pre><code id="full-output-code"></code></pre>
+                    </div>
+                    <div id="code-examples-tab" class="code-tab-content">
+                        <div id="code-examples"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loading-spinner">
+        <div class="spinner"></div>
+        <span>Procesando...</span>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
